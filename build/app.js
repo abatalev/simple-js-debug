@@ -1,35 +1,36 @@
 // parameters
 const port = 8080;
-const json_port = 3002;
-const db_name = "../data/db.json";
-const js_path = "dist";
-const use_json_server = true;
-const real_backend = "http://backend:8080/";
+const jsonPort = 3002;
+const dbName = "../data/db.json";
+const jsPath = "dist";
+const useJsonServer = true;
+const realBackend = "http://backend:8080/";
 
-// launch
+// launch json-server
 const path = require("path");
-const db_path = path.join(__dirname, db_name);
+const dbPath = path.join(__dirname, dbName);
 
 const jsonServer = require("json-server");
 const server = jsonServer.create();
 
 server.use(jsonServer.defaults());
-server.use(jsonServer.router(db_path));
+server.use(jsonServer.router(dbPath));
 
+// launch express
 const { createProxyMiddleware } = require("http-proxy-middleware");
 const express = require("express");
 const app = express();
 
-app.use(express.static(js_path));
-if (use_json_server) {
-  server.listen(json_port, () => {
-    console.log(`[INFO] JSON Server is running at http://localhost:${json_port}`);
+app.use(express.static(jsPath));
+if (useJsonServer) {
+  server.listen(jsonPort, () => {
+    console.log(`[INFO] JSON Server is running at http://localhost:${jsonPort}`);
   });
   console.log("[INFO] /api redirect to json-server");
   app.use(
     "/api",
     createProxyMiddleware({
-      target: `http://localhost:${json_port}/`,
+      target: `http://localhost:${jsonPort}/`,
       changeOrigin: true,
       pathRewrite: {
         [`^/api`]: "",
@@ -37,11 +38,11 @@ if (use_json_server) {
     })
   );
 } else {
-  console.log("[INFO] /api redirect to backend: " + real_backend);
+  console.log("[INFO] /api redirect to backend: " + realBackend);
   app.use(
     "/api",
     createProxyMiddleware({
-      target: real_backend,
+      target: realBackend,
       changeOrigin: true,
     })
   );
